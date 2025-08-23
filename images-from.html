@@ -2,158 +2,183 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link id="favicon" rel="shortcut icon" href="" type="image/x-icon">
-  <title>Картинки из текста</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link id="favicon" rel="shortcut icon" href="" type="image/x-icon">
+    <title>Картинки из текста</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
 
-    textarea {
-      width: 100%;
-      height: 150px;
-      padding: 10px;
-      font-size: 14px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
 
-    textarea:focus {
-      outline: none;
-    }
+        textarea:focus {
+            outline: none;
+        }
 
-    .image-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
-    }
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
 
-    .image-container img {
-      max-width: 200px;
-      max-height: 150px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
+        .image-container img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
 
-    button {
-      padding: 10px;
-      font-size: 16px;
-      background-color: #dbdbdb;
-      color: #000;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #dbdbdb;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-    button:hover {
-      text-decoration: underline;
-    }
+        button:hover {
+            text-decoration: underline;
+        }
 
-    #dispose {
-      border: 2px solid red;
-    }
-  </style>
+        #dispose {
+            border: 2px solid red;
+        }
+
+        #historyRecords {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
-  <h1>Текст со ссылками на картинки</h1>
-  <textarea id="imageLinks" placeholder="текст со ссылками"></textarea>
+    <h1>Текст со ссылками на картинки</h1>
+    <textarea id="imageLinks" placeholder="текст со ссылками"></textarea>
 
-  <button onclick="displayImages()">отобразить</button>
-  <button onclick="getLast()">последнее</button>
-  <button id="dispose" onclick="window.location.reload()">очистить</button>
-  <button onclick="showOldVK()">отобразить старые ссылки вк</button>
+    <button onclick="displayImages()">отобразить</button>
+    <button onclick="getLast()">последнее</button>
+    <button id="dispose" onclick="window.location.reload()">очистить</button>
+    <button onclick="showOldVK()">отобразить старые ссылки вк</button>
 
-  <div id="imageContainer" class="image-container"></div>
+    <select name="elements" id="historyRecords">
+        <option value="">выбрать из истории</option>
+    </select>
 
-  <script>
-    var setTxt = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
-    
-    if (!localStorage.getItem("history")) {
-      localStorage.setItem("history", JSON.stringify([]));
-    }
-    var setHistory = (str) => {
-      var hist = JSON.parse(localStorage.getItem("history"));
-      hist.push(str);
-      localStorage.setItem("history", JSON.stringify(hist));
-    };
-    var searchHistory = JSON.parse(localStorage.history ?? JSON.parse([]));
-    
-    const container = document.getElementById("imageContainer");
-    var smthWentWrong = false;
-    var favicon = document.getElementById("favicon");
-    favicon.href = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAQABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5D/Zi/wCCbX7IGqf8Es9C+Lfjrx94wvv2gr/w/c+JNO+GS+KLHSIPFgGu6npdlb2cb2T3Nx5rabIskdtK8wP/ADy82I145Zaj+zv+2N8C/jFbaD4A1P4Q658NvBj+LPD2o634s0zUYpTDqFjbf2TElrpemy3E063ShZrue7lXyThWeR3r0P8AZp/4Kx/Cj4a/sOfCLwNcWR8FfFL4XWmq6fH42h+C+h+OdSEV1qt1fR/Zbq/1W0EUaxXt1A1vLbzRf6TLIMSeW8XP/tT/APBUTRfj/wDs4fETw54k+N/xv+MGq674fh0bwtpHiH4aaN4Z0Pw3N/bekX8tzH9j1e5EWLbTpbeNI7fCrcFVKIWB7KdSnCHK9+um+mzf9W6anNOE5Suvz28/6/I//9k="
+    <button onclick="clearHistory()">очистить историю</button>
 
+    <div id="imageContainer" class="image-container"></div>
 
-    function displayImages() {
-      const text = document.getElementById("imageLinks").value;
-      container.innerHTML = "";
-      const urls = text.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)/gi);
-      setTxt();
-      setHistory(text);
-      debugger;
+    <script>
+        var setTxt = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
 
-        if (urls) {
-          urls.forEach((url) => {
-            const img = document.createElement("img");
-            img.decoding = "async";
-            img.src = url;
-            img.alt = "КАРТИНКА НЕ НАЙДЕНА";
-
-            if ( img.alt === "КАРТИНКА НЕ НАЙДЕНА" ) {
-              smthWentWrong = true
-            }
-
-            container.appendChild(img);
-            img.style.cursor = 'pointer';
-            img.onclick = () => window.open(new URL(img.src), '_blank').focus();
-          });
-        } else {
-          throw new Error("ССЫЛКИ НЕ НАЙДЕНЫ");
-          container.innerHTML = "<p>ССЫЛКИ НЕ НАЙДЕНЫ</p>";
+        if (!localStorage.history) {
+            localStorage.setItem("history", JSON.stringify([]));
         }
-        document.getElementById("imageLinks").addEventListener("input", () => displayImages())
-     
-    }
+
+        var setHistory = (str) => {
+            var hist = JSON.parse(localStorage.getItem("history"));
+            hist.push(str);
+            localStorage.setItem("history", JSON.stringify(hist));
+        };
+
+        var searchHistory = JSON.parse(localStorage.history ?? JSON.parse([]));
+
+        const container = document.getElementById("imageContainer");
+        const historyRecords = document.querySelector("select#historyRecords");
+
+        searchHistory.forEach((v, i, arr) => {
+            historyRecords.insertAdjacentHTML("beforeend", `<option value="${v}" >${v.substring(0, 50)}</option>`)
+        })
+
+        historyRecords.addEventListener("change", (e) => {
+            document.getElementById("imageLinks").value = e.target.value;
+            displayImages();
+        })
+
+        var favicon = document.getElementById("favicon");
+        favicon.href = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAQABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5D/Zi/wCCbX7IGqf8Es9C+Lfjrx94wvv2gr/w/c+JNO+GS+KLHSIPFgGu6npdlb2cb2T3Nx5rabIskdtK8wP/ADy82I145Zaj+zv+2N8C/jFbaD4A1P4Q658NvBj+LPD2o634s0zUYpTDqFjbf2TElrpemy3E063ShZrue7lXyThWeR3r0P8AZp/4Kx/Cj4a/sOfCLwNcWR8FfFL4XWmq6fH42h+C+h+OdSEV1qt1fR/Zbq/1W0EUaxXt1A1vLbzRf6TLIMSeW8XP/tT/APBUTRfj/wDs4fETw54k+N/xv+MGq674fh0bwtpHiH4aaN4Z0Pw3N/bekX8tzH9j1e5EWLbTpbeNI7fCrcFVKIWB7KdSnCHK9+um+mzf9W6anNOE5Suvz28/6/I//9k="
 
 
-    function showOldVK() {
-      const text = document.getElementById("imageLinks").value;
-      let value = text;
-      value = value.split(";");
-      console.log(value);
-      setTxt();
-      setHistory(text);
-      value.forEach((string) => {
-        let cs = string.match(/cs\d{6}/);
-        let splitter = string.match(/v\d{9}/);
-        string = string.replace(cs, "pp.userapi.com");
-        string = string.split(splitter);
-        let forPaste = `${cs}/${splitter}`.replace("s", "");
-        string.splice(1, 0, forPaste);
-        string = string.join("").replace(".vk.me", "");
-        const img = document.createElement("img");
-        img.src = string;
-        img.alt = "КАРТИНКА НЕ НАЙДЕНА";
-        img.style.cursor = 'pointer';
-        img.onclick = () => window.open(new URL(img.src), '_blank').focus();
-        container.appendChild(img);
-      });
-    }
+        function displayImages() {
+            const text = document.getElementById("imageLinks").value;
+            container.innerHTML = "";
+            const urls = text.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)/gi);
+            setTxt();
+            setHistory(text);
 
-    function getLast() {
-      document.getElementById("imageLinks").value = localStorage.getItem("gText");
-    }
+            if (urls) {
+                console.log(urls.length);
+                if (urls.length == 1 && urls[0].search(/vk\.me|vk\.pp/) != -1) {
+                    showOldVK();
+                } else {
+                    urls.forEach((url) => {
+                        const img = document.createElement("img");
+                        img.decoding = "async";
+                        img.src = url;
+                        img.alt = "КАРТИНКА НЕ НАЙДЕНА";
 
-    function fromHistory() {
+                        container.appendChild(img);
+                        img.style.cursor = 'pointer';
+                        img.onclick = () => window.open(new URL(img.src), '_blank').focus();
+                    });
+                }
+            } else {
+                throw new Error("ССЫЛКИ НЕ НАЙДЕНЫ");
+                container.innerHTML = "<p>ССЫЛКИ НЕ НАЙДЕНЫ</p>";
+            }
+            document.getElementById("imageLinks").addEventListener("input", () => displayImages())
+        }
 
-    }
 
-  </script>
+        function showOldVK() {
+            const text = document.getElementById("imageLinks").value;
+            let value = text;
+            value = value.split(";");
+            console.log(value);
+            setTxt();
+            setHistory(text);
+            value.forEach((string) => {
+                let cs = string.match(/cs\d{6}/);
+                let splitter = string.match(/v\d{9}/);
+                string = string.replace(cs, "pp.userapi.com");
+                string = string.split(splitter);
+                let forPaste = `${cs}/${splitter}`.replace("s", "");
+                string.splice(1, 0, forPaste);
+                string = string.join("").replace(".vk.me", "");
+                const img = document.createElement("img");
+                img.src = string;
+                img.alt = "КАРТИНКА НЕ НАЙДЕНА";
+                img.style.cursor = 'pointer';
+                img.onclick = () => window.open(new URL(img.src), '_blank').focus();
+                container.appendChild(img);
+            });
+        }
+
+        function getLast() {
+            document.getElementById("imageLinks").value = localStorage.getItem("gText");
+        }
+
+        function clearHistory() {
+            localStorage.removeItem("history");
+            historyRecords.innerHTML = '<option value="">выбрать из истории</option>';
+        }
+
+    </script>
 </body>
 
 </html>
