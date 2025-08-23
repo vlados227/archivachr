@@ -72,6 +72,17 @@
 
   <script>
     var setTxt = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
+    
+    if (!localStorage.getItem("history")) {
+      localStorage.setItem("history", JSON.stringify([]));
+    }
+    var setHistory = (str) => {
+      var hist = JSON.parse(localStorage.getItem("history"));
+      hist.push(str);
+      localStorage.setItem("history", JSON.stringify(hist));
+    };
+    var searchHistory = JSON.parse(localStorage.history ?? JSON.parse([]));
+    
     const container = document.getElementById("imageContainer");
     var smthWentWrong = false;
     var favicon = document.getElementById("favicon");
@@ -83,6 +94,8 @@
       container.innerHTML = "";
       const urls = text.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)/gi);
       setTxt();
+      setHistory(text);
+      debugger;
 
         if (urls) {
           urls.forEach((url) => {
@@ -114,6 +127,7 @@
       value = value.split(";");
       console.log(value);
       setTxt();
+      setHistory(text);
       value.forEach((string) => {
         let cs = string.match(/cs\d{6}/);
         let splitter = string.match(/v\d{9}/);
@@ -133,6 +147,10 @@
 
     function getLast() {
       document.getElementById("imageLinks").value = localStorage.getItem("gText");
+    }
+
+    function fromHistory() {
+
     }
 
   </script>
