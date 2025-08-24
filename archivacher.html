@@ -209,6 +209,10 @@
                 <input type="submit" value="ПОИСК В M2CH" />
             </div>
         </form>
+        <center>
+            <button onclick="deleteHistory()" name="delete">УДАЛИТЬ ИСТОРИЮ</button>
+        </center>
+
 
     </div>
     <script>
@@ -269,6 +273,12 @@
                 var response = `https://arhivach.${topLvlDomain}/ajax/?act=locate_thread&url=${argument}`
                 open(response)
             }
+        }
+
+        function deleteHistory() {
+            localStorage.removeItem("search_history");
+            localStorage.removeItem("dates");
+            location.reload()
         }
         
 
