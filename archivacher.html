@@ -50,7 +50,6 @@
         }
 
         input {
-            width: 100%;
             margin-bottom: var(--margin-med);
             padding: var(--padd-xsm);
             border: 0;
@@ -102,8 +101,12 @@
             color: red;
         }
 
+        input[type="text"] {
+            min-width: -webkit-fill-available;
+            min-width: -moz-available;
+        }
+
         input[type="submit"] {
-            width: min-content;
             font-size: 1rem;
             padding: var(--padd-sm);
             border: 0;
@@ -118,7 +121,6 @@
         }
 
         .link_container {
-            /* font-weight: bold; */
             display: inline-block;
             margin-bottom: var(--margin-med);
             text-align: center;
@@ -127,10 +129,13 @@
         select {
             display: block;
             padding: var(--padd-xsm);
-            font-size: 14px;
+            font-weight: 300;
+            font-size: 1.2rem;
             border: 0;
             border-radius: 5px;
             margin-bottom: var(--margin-med);
+            min-width: -webkit-fill-available;
+            min-width: -moz-available;
         }
 
         @media (max-width: 800px) {
@@ -142,9 +147,22 @@
                 margin-top: 10vh;
             }
 
+            .link_container, h1 {
+                min-width: 200px;
+            }
+
+            #responseLink {
+                width: fit-content;
+            }
+
             h1,
             a {
                 line-height: 1.2;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+                width: initial;
             }
         }
     </style>
@@ -228,7 +246,7 @@
         const vkvideo = document.querySelector("#vkvideo");
         const yandexSearchQuery = document.querySelector("#yandexSearchQuery");
         const selectHistory = document.getElementById("selectHistory");
-        var linkRegex = /(https?:\/\/2ch\.hk)\/[a-zA-Z]{1,4}\/?(arch)?\/(\d{4}-\d{2}-\d{2})?\/?res\/\d{6,9}\.html(#\d{6,8})?/gi;
+        var linkRegex = /https?:\/\/2ch\.hk\/[a-zA-Z]{1,4}\/?(arch)?\/(\d{4}-\d{2}-\d{2})?\/?res\/\d{6,9}\.html(#\d{6,8})?/gi;
 
         var qparams = new URLSearchParams(location.search);
         if (qparams.size == 0) {
@@ -236,12 +254,8 @@
         }
         var topLvlDomain = qparams.get("top");
 
-        if ( !localStorage.search_history ) {
-            localStorage.setItem("search_history", JSON.stringify([]))
-        }
-        if ( !localStorage.dates ) {
-            localStorage.setItem("dates", JSON.stringify([]))
-        }
+        localStorage.search_history ?? localStorage.setItem("search_history", JSON.stringify([]));
+        localStorage.dates ?? localStorage.setItem("dates", JSON.stringify([]));
 
         var hist = JSON.parse(localStorage.search_history);
         var dates = JSON.parse(localStorage.dates);

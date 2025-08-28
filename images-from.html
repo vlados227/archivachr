@@ -12,8 +12,19 @@
             padding: 20px;
         }
 
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
         textarea {
-            width: 100%;
+            margin-bottom: .67em;
+            width: 90vw;
             height: 150px;
             padding: 10px;
             font-size: 14px;
@@ -40,6 +51,7 @@
         }
 
         button {
+            width: fit-content;
             padding: 10px;
             font-size: 16px;
             background-color: #dbdbdb;
@@ -47,10 +59,18 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            word-break: keep-all;
+            white-space: nowrap;
         }
 
         button:hover {
             text-decoration: underline;
+        }
+
+        .btns {
+            display: inline-flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         #dispose {
@@ -63,25 +83,47 @@
             border-radius: 5px;
             font-size: 14px;
         }
+
+        @media (max-width: 1166px) {
+            .btns {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 800px) {
+            textarea {
+                width: 100%;
+            }
+            .btns {
+                flex-direction: column;
+            }
+            .btns > * {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <h1>Текст со ссылками на картинки</h1>
-    <textarea id="imageLinks" placeholder="текст со ссылками"></textarea>
-
-    <button onclick="displayImages()">отобразить</button>
-    <button onclick="getLast()">последнее</button>
-    <button id="dispose" onclick="location.reload()">очистить</button>
-    <button onclick="showOldVK()">отобразить старые ссылки вк</button>
-
-    <select name="elements" id="historyRecords">
-        <option value="">выбрать из истории</option>
-    </select>
-
-    <button onclick="clearHistory()">очистить историю</button>
-
-    <div id="imageContainer" class="image-container"></div>
+    <main>
+        <h1>Текст со ссылками на картинки</h1>
+        <textarea id="imageLinks" placeholder="текст со ссылками"></textarea>
+    
+        <div class="btns">
+            <button onclick="displayImages()">отобразить</button>
+            <button onclick="getLast()">последнее</button>
+            <button id="dispose" onclick="location.reload()">очистить</button>
+            <button onclick="showOldVK()">отобразить старые ссылки вк</button>
+        
+            <select name="elements" id="historyRecords">
+                <option value="">выбрать из истории</option>
+            </select>
+            <button onclick="clearHistory()">очистить историю</button>
+        </div>
+    
+    
+        <div id="imageContainer" class="image-container"></div>
+    </main>
 
     <script>
         var setTxt = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
