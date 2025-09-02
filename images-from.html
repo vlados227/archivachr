@@ -128,14 +128,14 @@
     <script>
         var setTxt = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
 
-        if (!localStorage.history) {
-            localStorage.setItem("history", JSON.stringify([]));
-        }
+        localStorage.history ?? localStorage.setItem("history", JSON.stringify([]));
 
         var setHistory = (str) => {
             var hist = JSON.parse(localStorage.getItem("history"));
-            hist.push(str);
-            localStorage.setItem("history", JSON.stringify(hist));
+            if ( str != hist.at(-1) ) {
+                hist.push(str);
+                localStorage.setItem("history", JSON.stringify(hist));
+            }
         };
 
         var searchHistory = JSON.parse(localStorage.history ?? JSON.parse([]));
