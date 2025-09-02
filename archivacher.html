@@ -301,8 +301,9 @@
             "use strict"
             try {
                 dvachLink.value.replaceAll(/\,/g, "");
-                dvachLink.value = dvachLink.value.replace(/arch\/\d{4}-\d{2}-\d{2}\//i, "");
+                dvachLink.value = dvachLink.value.replace("m2ch.hk", "2ch.hk");
                 dvachLink.value = dvachLink.value.match(linkRegex);
+                dvachLink.value = dvachLink.value.replace(/arch\/\d{4}-\d{2}-\d{2}\//i, "");
                 if (dvachLink.value !== "") {
                     pushHistory(dvachLink.value);
                     updateHistory();
