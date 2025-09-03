@@ -246,7 +246,7 @@
         const vkvideo = document.querySelector("#vkvideo");
         const yandexSearchQuery = document.querySelector("#yandexSearchQuery");
         const selectHistory = document.getElementById("selectHistory");
-        var linkRegex = /https?:\/\/2ch\.hk\/[a-zA-Z]{1,4}\/?(arch)?\/(\d{4}-\d{2}-\d{2})?\/?res\/\d{6,9}\.html(#\d{6,8})?/gi;
+        var linkRegex = /https?:\/\/2ch\.(hk|su)\/[a-zA-Z]{1,4}\/?(arch)?\/(\d{4}-\d{2}-\d{2})?\/?res\/\d{6,9}\.html(#\d{6,8})?/gi;
 
         var qparams = new URLSearchParams(location.search);
         if (qparams.size == 0) {
