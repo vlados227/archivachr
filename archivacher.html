@@ -326,14 +326,14 @@
 
         form2.onsubmit = function (event) {
             event.preventDefault();
-            let searchUrl = "https://ya.ru/video/search?text=" + vkvideo.value.trim().split(" ").join("+") + "&from=tabbar&host=vk.com";
+            let searchUrl = "https://yandex.com/video/search?text=" + vkvideo.value.trim().split(" ").join("+") + "&from=tabbar&host=vk.com";
             open(searchUrl);
             vkvideo.value = null
         }
 
         form3.onsubmit = function (event) {
             event.preventDefault();
-            let searchUrl = `https://yandex.ru/search/?text=site%3Aarhivach.vc+${yandexSearchQuery.value.trim().split(" ").join("+")}`
+            let searchUrl = `https://yandex.com/search/?text=site%3Aarhivach.${topLvlDomain}+${yandexSearchQuery.value.trim().split(" ").join("+")}`
             open(searchUrl);
             yandexSearchQuery.value = null;
         }
@@ -351,6 +351,7 @@
         }
 
         selectHistory.addEventListener("change", (event) => {
+            event.stopPropagation();
             dvachLink.value = event.target.value;
             form4.childNodes[3].value = event.target.value;
         })
