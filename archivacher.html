@@ -247,7 +247,7 @@
         const vkvideo = document.querySelector("#vkvideo");
         const yandexSearchQuery = document.querySelector("#yandexSearchQuery");
         const selectHistory = document.getElementById("selectHistory");
-        var linkRegex = /https?:\/\/2ch\.(hk|su)\/[a-zA-Z]{1,4}\/?(arch)?\/(\d{4}-\d{2}-\d{2})?\/?res\/\d{6,9}\.html(#\d{6,8})?/gi;
+        var linkRegex = /https?:\/\/2ch\.(hk|su|org|life)\/[a-zA-Z]{1,4}\/?(arch)?\/(\d{4}-\d{2}-\d{2})?\/?res\/\d{6,9}\.html(#\d{6,8})?/gi;
 
         var qparams = new URLSearchParams(location.search);
         if (qparams.size == 0) {
@@ -302,6 +302,7 @@
             "use strict"
             try {
                 dvachLink.value.replaceAll(/\,/g, "");
+                dvachLink.value.replace(/(life|org)(?<!2ch)/, "su");
                 dvachLink.value = dvachLink.value.replace("m2ch.hk", "2ch.hk");
                 dvachLink.value = dvachLink.value.match(linkRegex);
                 dvachLink.value = dvachLink.value.replace(/arch\/\d{4}-\d{2}-\d{2}\//i, "");
@@ -344,7 +345,7 @@
             pushHistory(value);
             updateHistory();
             value = value.replace(/arch\/\d{4}-\d{2}-\d{2}\//i, "");
-            value = value.replace("https://2ch.hk/", "");
+            value = value.replace(/(https:\/\/2ch.(hk|su|org)\/)/g, "");
             value = `https://m2ch.hk/${value}`; 
             open(new URL(value));
             event.target.childNodes[3].value = null;
