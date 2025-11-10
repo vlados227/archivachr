@@ -291,9 +291,12 @@
         }
 
         function deleteHistory() {
-            localStorage.removeItem("search_history");
-            localStorage.removeItem("dates");
-            location.reload()
+            let confirmAction = confirm("вы хотите удалить историю ?");
+            if (confirmAction){
+                localStorage.removeItem("search_history");
+                localStorage.removeItem("dates");
+                location.reload();
+            }
         }
         
 

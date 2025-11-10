@@ -126,26 +126,37 @@
     </main>
 
     <script>
-        var setTxt = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
+        var setLastText = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
 
         localStorage.history ?? localStorage.setItem("history", JSON.stringify([]));
 
+        function getHistory() {
+            return JSON.parse(localStorage.history ?? JSON.parse([]));
+        }
+        
         var setHistory = (str) => {
+            str = str.trim();
             var hist = JSON.parse(localStorage.getItem("history"));
-            if ( str != hist.at(-1) ) {
+            if ( str != hist.at(-1) && str != "" ) {
                 hist.push(str);
                 localStorage.setItem("history", JSON.stringify(hist));
+                updateHistoryRecords()
             }
         };
-
-        var searchHistory = JSON.parse(localStorage.history ?? JSON.parse([]));
+        window.onload = updateHistoryRecords;
 
         const container = document.getElementById("imageContainer");
         const historyRecords = document.querySelector("select#historyRecords");
 
-        searchHistory.forEach((v, i, arr) => {
-            historyRecords.insertAdjacentHTML("beforeend", `<option value="${v}" >${v.substring(0, 50)}</option>`)
-        })
+        function updateHistoryRecords() {
+            while ( historyRecords.children.length > 1 ) {
+                historyRecords.removeChild(historyRecords.lastChild);
+            };
+
+            getHistory().forEach((v, i, arr) => {
+                historyRecords.insertAdjacentHTML("beforeend", `<option value="${v}" >${v.substring(0, 50)}</option>`)
+            })
+        }
 
         historyRecords.addEventListener("change", (e) => {
             document.getElementById("imageLinks").value = e.target.value;
@@ -160,7 +171,7 @@
             const text = document.getElementById("imageLinks").value;
             container.innerHTML = "";
             const urls = text.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)/gi);
-            setTxt();
+            setLastText();
             setHistory(text);
 
             if (urls) {
@@ -192,7 +203,7 @@
             let value = text;
             value = value.split(";");
             console.log(value);
-            setTxt();
+            setLastText();
             setHistory(text);
             value.forEach((string) => {
                 let cs = string.match(/cs\d{6}/);
@@ -216,8 +227,12 @@
         }
 
         function clearHistory() {
-            localStorage.removeItem("history");
-            historyRecords.innerHTML = '<option value="">выбрать из истории</option>';
+            let confirmAction = confirm("вы хотите удалить историю ?");
+            if (confirmAction) {
+                localStorage.removeItem("history");
+                historyRecords.innerHTML = '<option value="">выбрать из истории</option>';
+                location.reload();
+            }
         }
 
     </script>
