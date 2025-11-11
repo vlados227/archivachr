@@ -170,7 +170,7 @@
         function displayImages() {
             const text = document.getElementById("imageLinks").value;
             container.innerHTML = "";
-            const urls = text.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)/gi);
+            const urls = text.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)\??[\w\d\=\+&\-_%]*/gi);
             setLastText();
             setHistory(text);
 
