@@ -40,7 +40,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 20px;
+            margin: 20px 0 20px 0;
         }
 
         .image-container img {
@@ -61,6 +61,14 @@
             cursor: pointer;
             word-break: keep-all;
             white-space: nowrap;
+        }
+
+        section {
+            display: flex;
+            flex-wrap: wrap;
+            box-sizing: border-box;
+            align-items: center;
+            gap: 3vw;
         }
 
         button:hover {
@@ -84,6 +92,40 @@
             font-size: 14px;
         }
 
+        .note__record {
+            min-width: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10%;
+            align-items: center;
+            margin: 0 0 3vh;
+            padding: 10px;
+            border: solid 1px grey;
+            border-radius: 5px;
+        }
+        .note__record > b {
+            margin-bottom: 10px;
+        }
+
+        dialog {
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+        }
+
+        dialog input {
+            padding: 5px;
+        }
+
+        #close {
+            float: left;
+        }
+
+        .note__record > button {
+            display: inline;
+        }
+
         @media (max-width: 1166px) {
             .btns {
                 justify-content: center;
@@ -99,6 +141,15 @@
             }
             .btns > * {
                 width: 100%;
+            }
+
+            section {
+                flex-direction: column;
+            }
+
+            dialog{
+                padding: 10px;
+                box-sizing: border-box;
             }
         }
     </style>
@@ -119,16 +170,33 @@
                 <option value="">выбрать из истории</option>
             </select>
             <button onclick="clearHistory()">очистить историю</button>
+
+            <button id="showDialog">добавить заметку</button>
+            <dialog>
+                <button id="close">x</button>
+                <form>
+                    <h3>Введите название закладки</h3>
+                    <input id="dialog__input" placeholder="по умолчанию дата и время" autofocus pattern="\S{1,55}" type="text">
+                    <input type="submit" value="OK">
+                </form>
+            </dialog>
+            
+            <button onclick="deleteAllNotes()">очистить заметки</button>
         </div>
     
     
         <div id="imageContainer" class="image-container"></div>
+
+        <section id="notes">
+
+        </section>
     </main>
 
     <script>
         var setLastText = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
 
         localStorage.history ?? localStorage.setItem("history", JSON.stringify([]));
+        localStorage.notes ?? localStorage.setItem("notes", "");
 
         function getHistory() {
             return JSON.parse(localStorage.history ?? JSON.parse([]));
@@ -143,10 +211,83 @@
                 updateHistoryRecords()
             }
         };
-        window.onload = updateHistoryRecords;
-
+        
         const container = document.getElementById("imageContainer");
         const historyRecords = document.querySelector("select#historyRecords");
+        const notesContainer = document.getElementById("notes");
+        const dialog = document.querySelector("dialog");
+        const showDialog = document.getElementById("showDialog");
+        const dialogInput = document.querySelector("dialog input");
+        const closeDialog = document.getElementById("close");
+
+        showDialog.addEventListener("click", () => {
+            dialog.showModal();
+        });
+
+        document.querySelector("dialog form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            addNote();
+            dialog.close();
+        });
+
+        closeDialog.addEventListener("click", () => dialog.close());
+        
+        window.onload = updateHistoryRecords, notesContainer.innerHTML = localStorage.getItem("notes") != '[]' ? localStorage.notes : '';
+        addListenersForNotes();
+        
+                        
+        let notesObserver = new MutationObserver(addListenersForNotes);
+        notesObserver.observe(notesContainer, { childList: true, subtree: true });
+        
+
+        function addListenersForNotes() {
+            const btns = document.querySelectorAll("#notes > div > button");
+            Array.from(notesContainer.children).forEach(e => e.addEventListener("click", (event) => getLinksFromNote(event)))
+            btns.forEach(el => el.addEventListener("click", e => deleteOneNote(e.currentTarget)))
+        }
+
+        function getNotes(){
+            return JSON.parse(localStorage.notes)
+        }
+
+        function addNote() {
+            const text = document.getElementById("imageLinks").value;
+            const header = dialogInput.value == "" ? Intl.DateTimeFormat(navigator.language, {dateStyle: "medium", timeStyle:"short"}).format(Date.now()) : dialogInput.value;
+            
+            let noteElement = document.createElement("div");
+            noteElement.classList = "note__record";
+            noteElement.dataset.value = text;
+            noteElement.innerHTML = header.bold();
+            noteElement.style.cursor = "pointer";
+            let btn = document.createElement("button");
+            btn.textContent = "удалить";
+            notesContainer.appendChild(noteElement);
+            noteElement.appendChild(btn);
+            localStorage.setItem("notes", notesContainer.innerHTML)
+        }
+
+        function getLinksFromNote(event) { // node list event
+            event.stopPropagation();
+            let text = document.getElementById("imageLinks");
+            
+            text.value = event.currentTarget.dataset.value;
+        }
+
+        function deleteAllNotes(){
+            const conf = confirm("Вы точно хотите удалить все заметки ?");
+            if (conf) {
+                notesObserver.disconnect();
+                while (notesContainer.children.length > 0) {
+                    notesContainer.removeChild(notesContainer.lastChild);
+                    localStorage.setItem("notes", "");
+                }
+            }
+        }
+
+        function deleteOneNote(record_el){ // button event
+            record_el.parentElement.remove();
+            localStorage.setItem("notes", notesContainer.innerHTML);
+        }
 
         function updateHistoryRecords() {
             while ( historyRecords.children.length > 1 ) {
