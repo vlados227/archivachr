@@ -32,6 +32,10 @@
             border: 1px solid #ddd;
         }
 
+        input#dialog__input {
+            margin-right: 10px;
+        }
+
         textarea:focus {
             outline: none;
         }
@@ -114,12 +118,29 @@
             border-radius: 5px;
         }
 
+        dialog[open]{
+            display: flex;
+            flex-direction: column;
+        }
+
+        dialog h3 {
+            display: block;
+        }
+
+        dialog form {
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         dialog input {
             padding: 5px;
         }
 
         #close {
             float: left;
+            line-height: 15px;
         }
 
         .note__record > button {
@@ -133,6 +154,9 @@
         }
 
         @media (max-width: 800px) {
+            #close{
+                font-size: 14px;
+            }
             textarea {
                 width: 100%;
             }
@@ -148,6 +172,7 @@
             }
 
             dialog{
+                min-height: 20vh;
                 padding: 10px;
                 box-sizing: border-box;
             }
@@ -173,11 +198,13 @@
 
             <button id="showDialog">добавить заметку</button>
             <dialog>
-                <button id="close">x</button>
+                <button id="close">&#10006;</button>
                 <form>
                     <h3>Введите название закладки</h3>
-                    <input id="dialog__input" placeholder="по умолчанию дата и время" pattern="\S{1,55}" type="text">
-                    <input type="submit" value="OK">
+                    <div>
+                        <input id="dialog__input" placeholder="по умолчанию дата и время" autofocus type="text">
+                        <input type="submit" value="OK">
+                    </div>
                 </form>
             </dialog>
             
