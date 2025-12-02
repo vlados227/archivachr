@@ -254,6 +254,9 @@
             qparams.append("top", "vc");
         }
         var topLvlDomain = qparams.get("top");
+        topLvlDomain = topLvlDomain.match(/[a-zA-Z]/g)?.join("");
+        const h1 = document.querySelector("h1");
+        topLvlDomain ?? h1.insertAdjacentHTML("beforebegin", "<h4>Неправильно указан домен 1 уровня</h4>");
 
         localStorage.search_history ?? localStorage.setItem("search_history", JSON.stringify([]));
         localStorage.dates ?? localStorage.setItem("dates", JSON.stringify([]));

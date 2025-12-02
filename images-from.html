@@ -223,7 +223,8 @@
         var setLastText = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
 
         localStorage.history ?? localStorage.setItem("history", JSON.stringify([]));
-        localStorage.notes ?? localStorage.setItem("notes", "");
+        localStorage.notes ?? localStorage.setItem("notes", JSON.stringify([]));
+        localStorage.noteHeaders ?? localStorage.setItem("noteHeaders", JSON.stringify([]));
 
         function getHistory() {
             return JSON.parse(localStorage.history ?? JSON.parse([]));
@@ -253,44 +254,66 @@
 
         document.querySelector("dialog form").addEventListener("submit", (e) => {
             e.preventDefault();
-            addNote();
+            addNoteToDOM();
             dialog.close();
         });
 
         closeDialog.addEventListener("click", () => dialog.close());
         
-        window.onload = updateHistoryRecords, notesContainer.innerHTML = localStorage.getItem("notes") != '[]' ? localStorage.notes : '';
+        updateHistoryRecords();
+        appendAllNotes();
         addListenersForNotes();
-        
                         
         let notesObserver = new MutationObserver(addListenersForNotes);
-        notesObserver.observe(notesContainer, { childList: true, subtree: true });
+        notesObserver.observe(notesContainer, { childList: true });
         
 
         function addListenersForNotes() {
             const btns = document.querySelectorAll("#notes > div > button");
-            Array.from(notesContainer.children).forEach(e => e.addEventListener("click", (event) => getLinksFromNote(event)))
-            btns.forEach(el => el.addEventListener("click", e => deleteOneNote(e.currentTarget)))
+            console.warn("addListenersForNotes", btns.length);
+            Array.from(notesContainer.children).forEach(e => e.addEventListener("click", event => getLinksFromNote(event)));
+            btns.forEach(el => el.addEventListener("click", e => deleteOneNote(e)));
         }
 
-        function getNotes(){
-            return JSON.parse(localStorage.notes)
+
+        function storeNewNote(value_, header_) {
+            let notes = JSON.parse(localStorage.notes);
+            let headers = JSON.parse(localStorage.noteHeaders);
+            notes.push(value_);
+            headers.push(header_);
+            localStorage.setItem("notes", JSON.stringify(notes));
+            localStorage.setItem("noteHeaders", JSON.stringify(headers));
         }
 
-        function addNote() {
-            const text = document.getElementById("imageLinks").value;
-            const header = dialogInput.value == "" ? Intl.DateTimeFormat(navigator.language, {dateStyle: "medium", timeStyle:"short"}).format(Date.now()) : dialogInput.value;
-            
+        function appendAllNotes() {
+            let noteContentsAll = JSON.parse(localStorage.notes);
+            let headersAll = JSON.parse(localStorage.noteHeaders);
+
+            for (let i = 0; i < noteContentsAll.length; i++) {
+                appendNote(noteContentsAll[i], headersAll[i]);
+            }
+        }
+        
+        function appendNote(noteContents, header) {
             let noteElement = document.createElement("div");
             noteElement.classList = "note__record";
-            noteElement.dataset.value = text;
+            noteElement.dataset.value = noteContents;
             noteElement.innerHTML = header.bold();
             noteElement.style.cursor = "pointer";
             let btn = document.createElement("button");
             btn.textContent = "удалить";
             notesContainer.appendChild(noteElement);
             noteElement.appendChild(btn);
-            localStorage.setItem("notes", notesContainer.innerHTML)
+            notesContainer.insertAdjacentElement("afterbegin", noteElement);
+        }
+
+        function addNoteToDOM() {
+            const noteContents = document.getElementById("imageLinks").value;
+            const header = dialogInput.value == "" ? Intl.DateTimeFormat(navigator.language, {dateStyle: "medium", timeStyle:"short"}).format(Date.now()) : dialogInput.value;
+            storeNewNote(noteContents, header);
+
+            appendNote(noteContents, header);
+            
         }
 
         function getLinksFromNote(event) { // node list event
@@ -306,14 +329,28 @@
                 notesObserver.disconnect();
                 while (notesContainer.children.length > 0) {
                     notesContainer.removeChild(notesContainer.lastChild);
-                    localStorage.setItem("notes", "");
                 }
+                localStorage.setItem("notes", JSON.stringify([]));
+                localStorage.setItem("noteHeaders", JSON.stringify([]));
             }
         }
 
-        function deleteOneNote(record_el){ // button event
-            record_el.parentElement.remove();
-            localStorage.setItem("notes", notesContainer.innerHTML);
+        function deleteOneNote(event){ // button event
+            event.stopPropagation();
+            event.currentTarget.parentElement.remove();
+            let notes = JSON.parse(localStorage.notes);
+            let headers = JSON.parse(localStorage.noteHeaders);
+
+            for (let i = 0; i < notes.length; i++)
+            {
+                if (notes[i] == event.currentTarget.parentElement.dataset.value) {
+                    notes.splice(i, 1);
+                    headers.splice(i, 1);
+                }
+            }
+
+            localStorage.setItem("notes", JSON.stringify(notes));
+            localStorage.setItem("noteHeaders", JSON.stringify(headers));
         }
 
         function updateHistoryRecords() {
