@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Websites Availability</title>
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 50vw;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <center>
+            <form>
+                <label for="websites">список сайтов</label>
+                <textarea name="websites" id="websites"></textarea>
+                <input type="submit">
+            </form>
+        </center>
+    </main>
+
+    <script>
+       const form = document.querySelector("form");
+       const textfield = document.querySelector("textarea");
+       var listURL = [];
+       var pool = [];
+
+       localStorage.lastItem ?? localStorage.setItem("lastItem", "");
+       if (localStorage.lastItem != '') textfield.value = localStorage.lastItem;
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            listURL = textfield.value.split(/\s/);
+            localStorage.lastItem = textfield.value;
+            console.log(listURL);
+
+            for (const url of listURL) {
+                const p = new Promise((resolve, reject) => {
+                    const ctl = new AbortController();
+                    const signal = ctl.signal;
+                    const timeout = setTimeout(() => ctl.abort("Запрос занял слишком долго"), 10000)
+                    fetch(url, {signal, method: "GET"})
+                        .then(r => {
+                            if (r.ok || r.redirected) {
+                                clearTimeout(timeout);
+                                return resolve({status: r.status, meaning: r.statusText});
+                            } else {
+                                clearTimeout(timeout);
+                                return reject(r)
+                            }
+                        })
+                        .catch(re => {
+                            return reject(re);
+                        })
+                })
+                pool.push(p)
+            }   
+
+            Promise.allSettled(pool).then(p => p.forEach(r => {
+                switch (r.status) {
+                    case "fulfilled":
+                        console.info(r.value.status, r.value.meaning)
+                        break;
+                    case "rejected":
+                        console.warn(r.reason.message ?? r.reason)
+                        break;
+                }
+            }))
+            pool = listURL = [];
+            console.clear();
+       }) //end form listener
+
+       function clear() {
+            textfield.value = null;
+       }
+
+    </script>
+</body>
+</html>
