@@ -14,12 +14,16 @@
     <center>
         <main>
             <h2>Преобразование в систему счисления</h2>
+
             <input placeholder="число" id="numberInput">
             <input placeholder="основание" type="number" id="radix" min="2" max="36" value="2" >
             <div id="output"></div>
+
+            <h2>Битовые операции</h2>
+
+            <input placeholder="2 значения разделенные пробелами" type="text" id="bits">
             <div id="bitand"></div>
             <div id="bitor"></div>
-            <div id="bitneg"></div>
             <div id="xor"></div>
         </main>
     </center>
@@ -40,31 +44,41 @@
         const numberInput = document.getElementById("numberInput");
         const radixInput = document.getElementById("radix");
         const numberOutput = document.getElementById("output");
+
+        const bitwiseOpsInput = document.getElementById("bits");
+        const bitand = document.getElementById("bitand");
+        const bitor = document.getElementById("bitor");
+        const xor = document.getElementById("xor");
+
         var radix = 2;
-        const isNumber = /^(0[xodb]{1}[a-f0-9]+)|\d+/i;
+        const isNumber = /^(0[xodb]{1}[a-f0-9]+)|\d+/ig;
 
         function castInteger(x) {
-            numberOutput.textContent = parseInt(x || 0).toString(parseInt(radix)).toUpperCase();
+            // console.info(x, " cast")
+            numberOutput.textContent = Number(x || 0).toString(parseInt(radix)).toUpperCase();
+        }
+
+        function displayBitwiseOps(x, y) {
+            bitand.textContent = `${x} & ${y} = ${x & y}`;
+            bitor.textContent = `${x} | ${y} = ${x | y}`;
+            xor.textContent = `${x} ^ ${y} = ${x ^ y}`;
         }
 
         radixInput.addEventListener("input", (e) => {
-            try {
-                var x = numberInput.value.match(isNumber)[0];
-                radix = e.target.value;
-                castInteger(x);
-            } catch (error) {
-                numberInput.textContent = error.message
-            }
+            var x = numberInput.value.match(isNumber)[0];
+            radix = e.target.value;
+            castInteger(x);
         });
 
-        numberInput.addEventListener("input", (e) => {
-            try {
-                var x = e.target.value.match(isNumber)[0];
-                console.log(x);
-                castInteger(x);
-            } catch (error) {
-                numberInput.textContent = error.message
-            }
+        numberInput.addEventListener("change", (e) => {
+            var x = e.target.value.match(isNumber)[0];
+            console.log(x);
+            castInteger(x);
+        });
+
+        bitwiseOpsInput.addEventListener("change", (e) => {
+            var ops = e.target.value.match(isNumber) || [0, 0];
+            displayBitwiseOps(ops[0], ops[1]);
         })
 
     </script>
