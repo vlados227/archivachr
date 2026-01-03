@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byte operations</title>
+    <style>
+        #numberInput {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <center>
+        <main>
+            <h2>Преобразование в систему счисления</h2>
+            <input placeholder="число" id="numberInput">
+            <input placeholder="основание" type="number" id="radix" min="2" max="36" value="2" >
+            <div id="output"></div>
+            <div id="bitand"></div>
+            <div id="bitor"></div>
+            <div id="bitneg"></div>
+            <div id="xor"></div>
+        </main>
+    </center>
+    <script>
+        function useDebounce(func, time = 500) {
+            if (typeof func != "function")
+                throw new Error(`First argument is type: ${typeof func}, want function.\n Maybe wrap with () => {}`);
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+
+                timeout = setTimeout(() => 
+                    func.apply(this, args)
+                , time);
+            }
+        }
+
+        const numberInput = document.getElementById("numberInput");
+        const radixInput = document.getElementById("radix");
+        const numberOutput = document.getElementById("output");
+        var radix = 2;
+        const isNumber = /^(0[xodb]{1}[a-f0-9]+)|\d+/i;
+
+        function castInteger(x) {
+            numberOutput.textContent = parseInt(x || 0).toString(parseInt(radix)).toUpperCase();
+        }
+
+        radixInput.addEventListener("input", (e) => {
+            try {
+                var x = numberInput.value.match(isNumber)[0];
+                radix = e.target.value;
+                castInteger(x);
+            } catch (error) {
+                numberInput.textContent = error.message
+            }
+        });
+
+        numberInput.addEventListener("input", (e) => {
+            try {
+                var x = e.target.value.match(isNumber)[0];
+                console.log(x);
+                castInteger(x);
+            } catch (error) {
+                numberInput.textContent = error.message
+            }
+        })
+
+    </script>
+</body>
+</html>

@@ -41,6 +41,7 @@
         }
 
         .image-container {
+            width: 100%;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
@@ -72,7 +73,7 @@
             flex-wrap: wrap;
             box-sizing: border-box;
             align-items: center;
-            gap: 3vw;
+            gap: 2vw;
         }
 
         button:hover {
@@ -270,7 +271,7 @@
 
         function addListenersForNotes() {
             const btns = document.querySelectorAll("#notes > div > button");
-            console.warn("addListenersForNotes", btns.length);
+            // console.warn("addListenersForNotes", btns.length);
             Array.from(notesContainer.children).forEach(e => e.addEventListener("click", event => getLinksFromNote(event)));
             btns.forEach(el => el.addEventListener("click", e => deleteOneNote(e)));
         }
