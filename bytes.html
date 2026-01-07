@@ -1,30 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Byte operations</title>
+    <title>Bitwise operations</title>
     <style>
-        #numberInput {
+        body {
+            font-family: sans-serif;
+        }
+
+        input {
+            font-size: 1.25rem;
+            width: auto;
+            box-sizing: border-box;
             margin-bottom: 20px;
+        }
+
+        #errors {
+            height: 25px;
+            font-size: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 20px;
+            text-decoration: underline;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        #output {
+            font-size: 1.25rem;
+        }
+
+        #bitops {
+            font-size: 1.3rem;
         }
     </style>
 </head>
+
 <body>
     <center>
         <main>
             <h2>Преобразование в систему счисления</h2>
 
             <input placeholder="число" id="numberInput">
-            <input placeholder="основание" type="number" id="radix" min="2" max="36" value="2" >
+            <input placeholder="основание" type="number" id="radix" min="2" max="36" value="2">
             <div id="output"></div>
 
             <h2>Битовые операции</h2>
 
-            <input placeholder="2 значения разделенные пробелами" type="text" id="bits">
-            <div id="bitand"></div>
-            <div id="bitor"></div>
-            <div id="xor"></div>
+            <label for="bits">2 значения разделенные пробелами</label>
+            <input type="text" id="bits">
+            <div id="errors"></div>
+
+            <div id="bitops">
+                <div id="bitand"></div>
+                <div id="bitor"></div>
+                <div id="xor"></div>
+                <div id="lsh"></div>
+                <div id="rsh"></div>
+            </div>
+            <h2>Рассчет операции</h2>
+            <input type="text" id="evaluate" placeholder="выражение">
+            <p id="eval_result"></p>
         </main>
     </center>
     <script>
@@ -32,13 +72,12 @@
             if (typeof func != "function")
                 throw new Error(`First argument is type: ${typeof func}, want function.\n Maybe wrap with () => {}`);
             let timeout;
-            return function(...args) {
+            (function (...args) {
                 clearTimeout(timeout);
-
-                timeout = setTimeout(() => 
+                timeout = setTimeout(() => {
                     func.apply(this, args)
-                , time);
-            }
+                }, time);
+            })();
         }
 
         const numberInput = document.getElementById("numberInput");
@@ -46,15 +85,29 @@
         const numberOutput = document.getElementById("output");
 
         const bitwiseOpsInput = document.getElementById("bits");
+        const errorsContainer = document.getElementById("errors");
+        const bitops = document.getElementById("bitops");
         const bitand = document.getElementById("bitand");
         const bitor = document.getElementById("bitor");
         const xor = document.getElementById("xor");
+        const lsh = document.getElementById("lsh");
+        const rsh = document.getElementById("rsh");
+
+        const evalResult = document.getElementById("eval_result")
+        const evalInput = document.getElementById("evaluate");
+        const EvalPattern = /^[\s<>/*\-+()^&~|xo0-9a-f]+$/gi;
 
         var radix = 2;
-        const isNumber = /^(0[xodb]{1}[a-f0-9]+)|\d+/ig;
+        const err_ttl = 1500;
+        const isNumberRegex = /(^\b0[xob][a-f0-9]+\b|^\d+)\b|(?<=\s)\d+$/ig;
+
+        function clearError() {
+            setTimeout(() => {
+                errorsContainer.innerHTML = null;
+            }, err_ttl);
+        }
 
         function castInteger(x) {
-            // console.info(x, " cast")
             numberOutput.textContent = Number(x || 0).toString(parseInt(radix)).toUpperCase();
         }
 
@@ -62,25 +115,69 @@
             bitand.textContent = `${x} & ${y} = ${x & y}`;
             bitor.textContent = `${x} | ${y} = ${x | y}`;
             xor.textContent = `${x} ^ ${y} = ${x ^ y}`;
+            lsh.textContent = `${x} << ${y} = ${x << y}`;
+            rsh.textContent = `${x} >> ${y} = ${x >> y}`;
         }
 
-        radixInput.addEventListener("input", (e) => {
-            var x = numberInput.value.match(isNumber)[0];
-            radix = e.target.value;
-            castInteger(x);
+        radixInput.addEventListener("input", (event) => {
+            useDebounce(() => {
+                var x = numberInput.value.match(isNumberRegex)[0];
+                radix = event.target.value;
+                if (radix < 2 || radix > 36) {
+                    errorsContainer.innerHTML = "<h4>Основание СС должно быть от 2 до 36</h4>";
+                    clearError();
+                    return;
+                }
+                castInteger(x);
+            })
         });
 
-        numberInput.addEventListener("change", (e) => {
-            var x = e.target.value.match(isNumber)[0];
-            console.log(x);
-            castInteger(x);
+        numberInput.addEventListener("input", (event) => {
+            useDebounce(() => {
+                var x = event.target.value.match(isNumberRegex);
+                if (x == null) {
+                    console.log(event.target.style)
+                    errorsContainer.innerHTML = "<h4>Нужно ввести число</h4>";
+                    clearError();
+                    return;
+                }
+                castInteger(x[0]);
+            })
         });
 
-        bitwiseOpsInput.addEventListener("change", (e) => {
-            var ops = e.target.value.match(isNumber) || [0, 0];
-            displayBitwiseOps(ops[0], ops[1]);
-        })
+        bitwiseOpsInput.addEventListener("input", (event) => {
+            useDebounce(() => {
+                var ops = event.target.value.match(isNumberRegex);
+                // console.log(ops);
+                if (ops == null || ops.length < 2 || ops.length > 2) {
+                    errorsContainer.innerHTML = "<h4>Необходимо 2 числа</h4>";
+                    for (const bitop of bitops.children) {
+                        bitop.textContent = null;
+                    }
+                    clearError();
+                    return;
+                } else
+                    displayBitwiseOps(ops[0], ops[1]);
+            })
+        });
+
+        evalInput.addEventListener("input", (event) => {
+            useDebounce(() => {
+                try {
+                    let expr = event.target.value.match(EvalPattern);
+                    if (expr == null) throw Error("empty expression");
+                    evalResult.textContent = eval(expr[0]);
+                } catch (error) {
+                    evalResult.textContent = null;
+                    errorsContainer.innerHTML = "<h4>Неправильно введено выражение</h4>";
+                    console.error(error);
+                    clearError();
+                    return;
+                }
+            }, 1000)
+        });
 
     </script>
 </body>
+
 </html>
