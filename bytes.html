@@ -136,7 +136,6 @@
             useDebounce(() => {
                 var x = event.target.value.match(isNumberRegex);
                 if (x == null) {
-                    console.log(event.target.style)
                     errorsContainer.innerHTML = "<h4>Нужно ввести число</h4>";
                     clearError();
                     return;
@@ -165,13 +164,16 @@
             useDebounce(() => {
                 try {
                     let expr = event.target.value.match(EvalPattern);
-                    if (expr == null) throw Error("empty expression");
+                    if (expr == null) {
+                        evalResult.innerHTML = null;
+                        return;
+                    }
+                    console.log(expr[0]);
                     evalResult.textContent = eval(expr[0]);
                 } catch (error) {
                     evalResult.textContent = null;
-                    errorsContainer.innerHTML = "<h4>Неправильно введено выражение</h4>";
-                    console.error(error);
-                    clearError();
+                    evalResult.insertAdjacentHTML("beforeend", "<h4>Неправильно введено выражение</h4>");
+                    console.error("In expression: ", error);
                     return;
                 }
             }, 1000)
