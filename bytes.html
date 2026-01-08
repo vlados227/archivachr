@@ -18,20 +18,30 @@
         }
 
         #errors {
+            display: none;
             height: 25px;
             font-size: 1.25rem;
+            border: solid red 2px;
+            border-radius: 5px;
+            height: auto;
+            max-width: min-content;
+        }
+
+        #errors > h4 {
+            margin: 10px;
         }
 
         label {
             display: block;
             margin-bottom: 20px;
             text-decoration: underline;
-            font-weight: bold;
-            font-size: 1.2rem;
+            letter-spacing: .5px;
+            font-size: 1.1rem;
         }
 
         #output {
             font-size: 1.25rem;
+            min-height: max-content;
         }
 
         #bitops {
@@ -53,7 +63,6 @@
 
             <label for="bits">2 значения разделенные пробелами</label>
             <input type="text" id="bits">
-            <div id="errors"></div>
 
             <div id="bitops">
                 <div id="bitand"></div>
@@ -65,6 +74,8 @@
             <h2>Рассчет операции</h2>
             <input type="text" id="evaluate" placeholder="выражение">
             <p id="eval_result"></p>
+
+            <div id="errors"></div>
         </main>
     </center>
     <script>
@@ -98,13 +109,13 @@
         const EvalPattern = /^[\s<>/*\-+()^&~|xo0-9a-f]+$/gi;
 
         var radix = 2;
-        const err_ttl = 1500;
         const isNumberRegex = /(^\b0[xob][a-f0-9]+\b|^\d+)\b|(?<=\s)\d+$/ig;
 
-        function clearError() {
+        function clearError(ttl = 1500) {
             setTimeout(() => {
                 errorsContainer.innerHTML = null;
-            }, err_ttl);
+                errorsContainer.style.display = "none";
+            }, ttl);
         }
 
         function castInteger(x) {
@@ -121,14 +132,24 @@
 
         radixInput.addEventListener("input", (event) => {
             useDebounce(() => {
-                var x = numberInput.value.match(isNumberRegex)[0];
-                radix = event.target.value;
-                if (radix < 2 || radix > 36) {
-                    errorsContainer.innerHTML = "<h4>Основание СС должно быть от 2 до 36</h4>";
+                var x = numberInput.value.match(isNumberRegex);
+                if (x == null) {
+                    errorsContainer.style.display = "block";
+                    errorsContainer.innerHTML = "<h4>Нужно ввести число</h4>";
+                    numberOutput.textContent = null;
                     clearError();
                     return;
                 }
-                castInteger(x);
+                let value = event.target.value;
+                if (value < 2 || value > 36) {
+                    errorsContainer.style.display = "block";
+                    errorsContainer.innerHTML = "<h4>Основание СС должно быть от 2 до 36</h4>";
+                    numberOutput.textContent = null;
+                    clearError();
+                    return;
+                }
+                radix = parseInt(value);
+                castInteger(x[0]);
             })
         });
 
@@ -136,7 +157,7 @@
             useDebounce(() => {
                 var x = event.target.value.match(isNumberRegex);
                 if (x == null) {
-                    console.log(event.target.style)
+                    errorsContainer.style.display = "block";
                     errorsContainer.innerHTML = "<h4>Нужно ввести число</h4>";
                     clearError();
                     return;
@@ -150,7 +171,8 @@
                 var ops = event.target.value.match(isNumberRegex);
                 // console.log(ops);
                 if (ops == null || ops.length < 2 || ops.length > 2) {
-                    errorsContainer.innerHTML = "<h4>Необходимо 2 числа</h4>";
+                    errorsContainer.style.display = "block";
+                    errorsContainer.innerHTML = "<h4>Необходимо 2 числа для битовой операции</h4>";
                     for (const bitop of bitops.children) {
                         bitop.textContent = null;
                     }
@@ -164,14 +186,20 @@
         evalInput.addEventListener("input", (event) => {
             useDebounce(() => {
                 try {
+                    errorsContainer.innerHTML = null;
                     let expr = event.target.value.match(EvalPattern);
-                    if (expr == null) throw Error("empty expression");
+                    if (expr == null) {
+                        evalResult.innerHTML = null;
+                        return;
+                    }
+                    console.log(expr[0]);
                     evalResult.textContent = eval(expr[0]);
                 } catch (error) {
                     evalResult.textContent = null;
-                    errorsContainer.innerHTML = "<h4>Неправильно введено выражение</h4>";
-                    console.error(error);
+                    errorsContainer.style.display = "block";
+                    errorsContainer.insertAdjacentHTML("beforeend", "<h4>Неправильно введено выражение</h4>");
                     clearError();
+                    console.error("In expression: ", error);
                     return;
                 }
             }, 1000)
