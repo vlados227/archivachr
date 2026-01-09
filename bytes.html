@@ -193,6 +193,11 @@
                         return;
                     }
                     console.log(expr[0]);
+                    if (expr == null) {
+                        evalResult.innerHTML = null;
+                        return;
+                    }
+                    console.log(expr[0]);
                     evalResult.textContent = eval(expr[0]);
                 } catch (error) {
                     evalResult.textContent = null;
