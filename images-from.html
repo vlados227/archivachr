@@ -19,11 +19,13 @@
         }
 
         h1 {
+            margin: 1rem 0 1rem 0;
             text-align: center;
         }
 
         textarea {
             margin-bottom: .67em;
+            margin-top: 1rem;
             width: 100%;
             height: 150px;
             padding: 10px;
@@ -106,15 +108,16 @@
             gap: 10%;
             align-items: center;
             margin: 0 0 3vh;
-            padding: 10px;
+            padding: 20px;
             border: solid 1px grey;
             border-radius: 5px;
         }
         .note__record > b {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         dialog {
+            width: fit-content;
             text-align: center;
             border: none;
             border-radius: 5px;
@@ -130,7 +133,7 @@
         }
 
         dialog form {
-            margin: auto;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -140,6 +143,10 @@
             padding: 5px;
         }
 
+        dialog textarea {
+            width: 60vw;
+        }
+
         #close {
             float: left;
             line-height: 15px;
@@ -147,7 +154,7 @@
 
         .note__record > button {
             display: inline;
-            margin-bottom: 7.5px;
+            margin-bottom: 10px;
         }
 
         @media (max-width: 1166px) {
@@ -200,7 +207,7 @@
             <button onclick="clearHistory()">очистить историю</button>
 
             <button id="showDialog">добавить заметку</button>
-            <dialog>
+            <dialog id="createNote">
                 <button id="close">&#10006;</button>
                 <form>
                     <h3>Введите название закладки</h3>
@@ -210,8 +217,19 @@
                     </div>
                 </form>
             </dialog>
+
+            <dialog id="editDialog">
+                <button onclick="editDialog.close()">&#10006;</button>
+                <h3>Изменение заметки</h3>
+                <form>
+                    <label for="txt">новый текст</label>
+                    <textarea id="txt" autofocus placeholder="введите новый текст заметки"></textarea>
+                    <input type="submit" value="OK">
+                </form>
+            </dialog>
             
             <button onclick="deleteAllNotes()">очистить заметки</button>
+            <button onclick="imageLinks.select()">выделить все</button>
         </div>
     
     
@@ -223,7 +241,7 @@
     </main>
 
     <script>
-        var setLastText = () => localStorage.setItem("gText", document.getElementById("imageLinks").value);
+        var setLastText = () => localStorage.setItem("gText", imageLinks.value);
 
         localStorage.history ?? localStorage.setItem("history", JSON.stringify([]));
         localStorage.notes ?? localStorage.setItem("notes", JSON.stringify([]));
@@ -243,25 +261,36 @@
             }
         };
         
+        let imageLinks = document.getElementById("imageLinks");
         const container = document.getElementById("imageContainer");
         const historyRecords = document.querySelector("select#historyRecords");
         const notesContainer = document.getElementById("notes");
-        const dialog = document.querySelector("dialog");
+        const dialog = document.getElementById("createNote");
         const showDialog = document.getElementById("showDialog");
         const dialogInput = document.querySelector("dialog input");
         const closeDialog = document.getElementById("close");
+        const btns = document.querySelector(".btns");
+        const editDialog = document.getElementById("editDialog");
+        var editEvent = null;
 
         showDialog.addEventListener("click", () => {
             dialog.showModal();
         });
 
-        document.querySelector("dialog form").addEventListener("submit", (e) => {
+        document.querySelector("#createNote form").addEventListener("submit", (e) => {
             e.preventDefault();
             addNoteToDOM();
             dialog.close();
         });
 
         closeDialog.addEventListener("click", () => dialog.close());
+
+        document.querySelector("#editDialog form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            editNote(editEvent);
+            editDialog.close();
+            editEvent = null;
+        });
         
         updateHistoryRecords();
         appendAllNotes();
@@ -272,27 +301,12 @@
         
 
         function addListenersForNotes() {
-            const btns_d = document.querySelectorAll(".note__record button.button__del");
-            const btns_ed = document.querySelectorAll(".note__record button.button__edit");
-            // console.warn("addListenersForNotes", btns.length);
             Array.from(notesContainer.children).forEach(e => {
                 e.onclick = (event) => {
                     getLinksFromNote(event);
-                    // displayImages();
+                    displayImages();
                 }
-                //e.ondblclick = (event) => editNote(event.target);
             });
-            btns_d.forEach(el => el.onclick = (event) => deleteOneNote(event));
-            btns_ed.forEach(el => el.onclick = (event) => editNote(event));
-            btns_ed.forEach(el => el.onmouseover = () => {
-                let h1 = document.querySelector("h1");
-                h1.textContent = "Изменить заметку";
-            });
-
-            btns_ed.forEach(el => el.onmouseleave = () => {
-                let h1 = document.querySelector("h1");
-                h1.textContent = "Текст со ссылками на картинки";
-            })
         }
 
 
@@ -324,12 +338,29 @@
             let delBtn = document.createElement("button");
             delBtn.classList.add("button__del");
             delBtn.textContent = "удалить";
+            delBtn.onclick = event => deleteOneNote(event);
             //notesContainer.appendChild(noteElement);
             noteElement.appendChild(delBtn);
 
             let editBtn = document.createElement("button");
             editBtn.classList.add("button__edit");
             editBtn.textContent = "изменить";
+            editBtn.onclick = event => {
+                editDialog.showModal();
+                editEvent = event;
+            };
+            editBtn.onmouseover = event => {
+                let parent = event.target.parentElement;
+                parent.style.boxShadow = "0 1px 15px rgba(0, 0, 0, 2)";
+                let h1 = document.querySelector("h1");
+                h1.textContent = "Изменить заметку";
+            };
+            editBtn.onmouseleave = event => {
+                let parent = event.target.parentElement;
+                parent.style.boxShadow = "";
+                let h1 = document.querySelector("h1");
+                h1.textContent = "Текст со ссылками на картинки";
+            };
             noteElement.appendChild(editBtn);
 
             notesContainer.insertAdjacentElement("afterbegin", noteElement);
@@ -337,39 +368,40 @@
 
         /**
         * @param {Event}  event
-        * @
+        * 
         */
         function editNote(event) {
             event.stopPropagation();
-            const actionConfirmed = confirm("Вы точно хотите изменить заметку ?");
-            if (!actionConfirmed) return;
+            editDialog.showModal();
 
             let element = event.target.parentElement;
-            console.log(element);
-            let noteContents = JSON.parse(localStorage.notes)
+            let noteContents = JSON.parse(localStorage.notes);
             let thisElemIdx = Array.from(notesContainer.children).indexOf(element);
             let idxInLS = (noteContents.length -1) - thisElemIdx;
+            const txt = document.getElementById("txt");
 
-            const newValue = document.getElementById("imageLinks").value;
+            const newValue = txt.value;
             element.dataset.value = newValue;
             noteContents[idxInLS] = newValue;
-            //console.log(noteContents);
+            // console.log(noteContents);
             localStorage.notes = JSON.stringify(noteContents);
+            txt.value = null;
+            imageLinks.value = newValue;
             // console.info({html: notesContainer.children[thisElemIdx].querySelector("b").textContent, local: noteContents[idxInLS]})
         }
 
         function addNoteToDOM() {
-            const noteContents = document.getElementById("imageLinks").value;
+            const noteContents = imageLinks.value;
             const header = dialogInput.value == "" ? Intl.DateTimeFormat(navigator.language, {dateStyle: "medium", timeStyle:"short"}).format(Date.now()) : dialogInput.value;
             storeNewNote(noteContents, header);
 
             appendNote(noteContents, header);
-            
+            dialogInput.value = null;
         }
 
         function getLinksFromNote(event) { // node list event
             event.stopPropagation();
-            let text = document.getElementById("imageLinks");
+            let text = imageLinks;
             
             text.value = event.currentTarget.dataset.value;
         }
@@ -415,7 +447,7 @@
         }
 
         historyRecords.addEventListener("change", (e) => {
-            document.getElementById("imageLinks").value = e.target.value;
+            imageLinks.value = e.target.value;
             displayImages();
         })
 
@@ -424,7 +456,7 @@
 
 
         function displayImages() {
-            const text = document.getElementById("imageLinks").value;
+            const text = imageLinks.value;
             container.innerHTML = "";
             const urls = text.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)\??[\w\d\=\+&\-_%]*/gi);
             setLastText();
@@ -450,12 +482,12 @@
                 throw new Error("ССЫЛКИ НЕ НАЙДЕНЫ");
                 container.innerHTML = "<p>ССЫЛКИ НЕ НАЙДЕНЫ</p>";
             }
-            document.getElementById("imageLinks").addEventListener("change", () => displayImages());
+            imageLinks.addEventListener("input", () => displayImages());
         }
 
 
         function showOldVK() {
-            const text = document.getElementById("imageLinks").value;
+            const text = imageLinks.value;
             let value = text;
             value = value.split(";");
             console.log(value);
@@ -471,6 +503,7 @@
                 string = string.join("").replace(".vk.me", "");
                 const img = document.createElement("img");
                 img.src = string;
+                img.loading = "eager";
                 img.alt = "КАРТИНКА НЕ НАЙДЕНА";
                 img.style.cursor = 'pointer';
                 img.onclick = () => window.open(new URL(img.src), '_blank').focus();
@@ -480,7 +513,7 @@
         }
 
         function getLast() {
-            document.getElementById("imageLinks").value = localStorage.getItem("gText");
+            imageLinks.value = localStorage.getItem("gText");
         }
 
         function clearHistory() {
