@@ -24,7 +24,7 @@
 
         textarea {
             margin-bottom: .67em;
-            width: 90vw;
+            width: 100%;
             height: 150px;
             padding: 10px;
             font-size: 14px;
@@ -72,7 +72,7 @@
             display: flex;
             flex-wrap: wrap;
             box-sizing: border-box;
-            align-items: center;
+            align-items: stretch;
             gap: 2vw;
         }
 
@@ -100,6 +100,7 @@
         .note__record {
             min-width: 100px;
             display: flex;
+            flex-direction: column;
             flex-wrap: wrap;
             justify-content: center;
             gap: 10%;
@@ -146,6 +147,7 @@
 
         .note__record > button {
             display: inline;
+            margin-bottom: 7.5px;
         }
 
         @media (max-width: 1166px) {
@@ -172,7 +174,7 @@
                 flex-direction: column;
             }
 
-            dialog{
+            dialog {
                 min-height: 20vh;
                 padding: 10px;
                 box-sizing: border-box;
@@ -270,10 +272,27 @@
         
 
         function addListenersForNotes() {
-            const btns = document.querySelectorAll("#notes > div > button");
+            const btns_d = document.querySelectorAll(".note__record button.button__del");
+            const btns_ed = document.querySelectorAll(".note__record button.button__edit");
             // console.warn("addListenersForNotes", btns.length);
-            Array.from(notesContainer.children).forEach(e => e.addEventListener("click", event => getLinksFromNote(event)));
-            btns.forEach(el => el.addEventListener("click", e => deleteOneNote(e)));
+            Array.from(notesContainer.children).forEach(e => {
+                e.onclick = (event) => {
+                    getLinksFromNote(event);
+                    // displayImages();
+                }
+                //e.ondblclick = (event) => editNote(event.target);
+            });
+            btns_d.forEach(el => el.onclick = (event) => deleteOneNote(event));
+            btns_ed.forEach(el => el.onclick = (event) => editNote(event));
+            btns_ed.forEach(el => el.onmouseover = () => {
+                let h1 = document.querySelector("h1");
+                h1.textContent = "Изменить заметку";
+            });
+
+            btns_ed.forEach(el => el.onmouseleave = () => {
+                let h1 = document.querySelector("h1");
+                h1.textContent = "Текст со ссылками на картинки";
+            })
         }
 
 
@@ -301,11 +320,42 @@
             noteElement.dataset.value = noteContents;
             noteElement.innerHTML = header.bold();
             noteElement.style.cursor = "pointer";
-            let btn = document.createElement("button");
-            btn.textContent = "удалить";
-            notesContainer.appendChild(noteElement);
-            noteElement.appendChild(btn);
+
+            let delBtn = document.createElement("button");
+            delBtn.classList.add("button__del");
+            delBtn.textContent = "удалить";
+            //notesContainer.appendChild(noteElement);
+            noteElement.appendChild(delBtn);
+
+            let editBtn = document.createElement("button");
+            editBtn.classList.add("button__edit");
+            editBtn.textContent = "изменить";
+            noteElement.appendChild(editBtn);
+
             notesContainer.insertAdjacentElement("afterbegin", noteElement);
+        }
+
+        /**
+        * @param {Event}  event
+        * @
+        */
+        function editNote(event) {
+            event.stopPropagation();
+            const actionConfirmed = confirm("Вы точно хотите изменить заметку ?");
+            if (!actionConfirmed) return;
+
+            let element = event.target.parentElement;
+            console.log(element);
+            let noteContents = JSON.parse(localStorage.notes)
+            let thisElemIdx = Array.from(notesContainer.children).indexOf(element);
+            let idxInLS = (noteContents.length -1) - thisElemIdx;
+
+            const newValue = document.getElementById("imageLinks").value;
+            element.dataset.value = newValue;
+            noteContents[idxInLS] = newValue;
+            //console.log(noteContents);
+            localStorage.notes = JSON.stringify(noteContents);
+            // console.info({html: notesContainer.children[thisElemIdx].querySelector("b").textContent, local: noteContents[idxInLS]})
         }
 
         function addNoteToDOM() {
@@ -387,7 +437,7 @@
                 } else {
                     urls.forEach((url) => {
                         const img = document.createElement("img");
-                        img.decoding = "async";
+                        img.loading = "eager";
                         img.src = url;
                         img.alt = "КАРТИНКА НЕ НАЙДЕНА";
 
@@ -400,7 +450,7 @@
                 throw new Error("ССЫЛКИ НЕ НАЙДЕНЫ");
                 container.innerHTML = "<p>ССЫЛКИ НЕ НАЙДЕНЫ</p>";
             }
-            document.getElementById("imageLinks").addEventListener("input", () => displayImages())
+            document.getElementById("imageLinks").addEventListener("change", () => displayImages());
         }
 
 
@@ -425,6 +475,7 @@
                 img.style.cursor = 'pointer';
                 img.onclick = () => window.open(new URL(img.src), '_blank').focus();
                 container.appendChild(img);
+                console.info("loaded image", img.src)
             });
         }
 
