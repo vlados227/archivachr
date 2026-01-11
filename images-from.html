@@ -303,6 +303,8 @@
         function addListenersForNotes() {
             Array.from(notesContainer.children).forEach(e => {
                 e.onclick = (event) => {
+                    event.stopImmediatePropagation();
+                    
                     getLinksFromNote(event);
                     displayImages();
                 }
@@ -346,7 +348,9 @@
             editBtn.classList.add("button__edit");
             editBtn.textContent = "изменить";
             editBtn.onclick = event => {
+                event.stopPropagation();
                 editDialog.showModal();
+                txt.defaultValue = event.target.parentElement.dataset.value;
                 editEvent = event;
             };
             editBtn.onmouseover = event => {
@@ -368,10 +372,9 @@
 
         /**
         * @param {Event}  event
-        * 
         */
         function editNote(event) {
-            event.stopPropagation();
+            event.stopImmediatePropagation();
             editDialog.showModal();
 
             let element = event.target.parentElement;
@@ -379,14 +382,10 @@
             let thisElemIdx = Array.from(notesContainer.children).indexOf(element);
             let idxInLS = (noteContents.length -1) - thisElemIdx;
             const txt = document.getElementById("txt");
-
             const newValue = txt.value;
             element.dataset.value = newValue;
             noteContents[idxInLS] = newValue;
-            // console.log(noteContents);
             localStorage.notes = JSON.stringify(noteContents);
-            txt.value = null;
-            imageLinks.value = newValue;
             // console.info({html: notesContainer.children[thisElemIdx].querySelector("b").textContent, local: noteContents[idxInLS]})
         }
 
@@ -398,9 +397,11 @@
             appendNote(noteContents, header);
             dialogInput.value = null;
         }
-
+        /**
+        * @param {Event} event
+        */
         function getLinksFromNote(event) { // node list event
-            event.stopPropagation();
+            event.stopImmediatePropagation();
             let text = imageLinks;
             
             text.value = event.currentTarget.dataset.value;
