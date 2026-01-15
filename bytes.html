@@ -109,7 +109,7 @@
         const EvalPattern = /^[\s<>/*\-+()^&~|xo0-9a-f]+$/gi;
 
         var radix = 2;
-        const isNumberRegex = /(^\b0[xob][a-f0-9]+\b|^\d+)\b|(?<=\s)\d+$/ig;
+        const isNumberRegex = /\b0[xob][a-f0-9]+\b|\d+/ig;
 
         function clearError(ttl = 1500) {
             setTimeout(() => {
@@ -169,7 +169,7 @@
         bitwiseOpsInput.addEventListener("input", (event) => {
             useDebounce(() => {
                 var ops = event.target.value.match(isNumberRegex);
-                // console.log(ops);
+                console.log(ops);
                 if (ops == null || ops.length < 2 || ops.length > 2) {
                     errorsContainer.style.display = "block";
                     errorsContainer.innerHTML = "<h4>Необходимо 2 числа для битовой операции</h4>";
