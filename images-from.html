@@ -103,9 +103,7 @@
             min-width: 100px;
             display: flex;
             flex-direction: column;
-            flex-wrap: wrap;
             justify-content: center;
-            gap: 10%;
             align-items: center;
             margin: 0 0 3vh;
             padding: 20px;
@@ -491,7 +489,7 @@
             const text = imageLinks.value;
             let value = text;
             value = value.split(";");
-            console.log(value);
+            // console.log(value);
             setLastText();
             setHistory(text);
             value.forEach((string) => {

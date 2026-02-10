@@ -45,7 +45,19 @@
         }
 
         #bitops {
-            font-size: 1.3rem;
+            display: inline-block;
+            font-size: 1.2rem;
+            text-align: start;
+            line-height: calc(1rem + 3px);
+        }
+
+        #bitops > div {
+            padding: 5px;
+            line-height: calc(1rem + 8px);
+        }
+
+        #bits {
+            display: block;
         }
     </style>
 </head>
@@ -56,7 +68,7 @@
             <h2>Преобразование в систему счисления</h2>
 
             <input placeholder="число" id="numberInput">
-            <input placeholder="основание" type="number" id="radix" min="2" max="36" value="2">
+            <input placeholder="сс" type="number" id="radix" min="2" max="36" value="2">
             <div id="output"></div>
 
             <h2>Битовые операции</h2>
@@ -123,24 +135,25 @@
         }
 
         function displayBitwiseOps(x, y) {
-            bitand.textContent = `${x} & ${y} = ${x & y}`;
-            bitor.textContent = `${x} | ${y} = ${x | y}`;
-            xor.textContent = `${x} ^ ${y} = ${x ^ y}`;
-            lsh.textContent = `${x} << ${y} = ${x << y}`;
-            rsh.textContent = `${x} >> ${y} = ${x >> y}`;
+            bitand.innerHTML = `${x} & ${y} = ${x & y} &ensp; ${(x & y).toString(2)}`;
+            bitor.innerHTML = `${x} | ${y} = ${x | y} &ensp; ${(x | y).toString(2)}`;
+            xor.innerHTML = `${x} ^ ${y} = ${x ^ y} &ensp; ${(x ^ y).toString(2)}`;
+            lsh.innerHTML = `${x} << ${y} = ${x << y} &ensp; ${(x << y).toString(2)}`;
+            rsh.innerHTML = `${x} >> ${y} = ${x >> y} &ensp; ${(x >> y).toString(2)}`;
         }
 
         radixInput.addEventListener("input", (event) => {
             useDebounce(() => {
+                let value = event.target.value;
                 var x = numberInput.value.match(isNumberRegex);
                 if (x == null) {
                     errorsContainer.style.display = "block";
                     errorsContainer.innerHTML = "<h4>Нужно ввести число</h4>";
                     numberOutput.textContent = null;
+                    radix = parseInt(value);
                     clearError();
                     return;
                 }
-                let value = event.target.value;
                 if (value < 2 || value > 36) {
                     errorsContainer.style.display = "block";
                     errorsContainer.innerHTML = "<h4>Основание СС должно быть от 2 до 36</h4>";
@@ -169,7 +182,7 @@
         bitwiseOpsInput.addEventListener("input", (event) => {
             useDebounce(() => {
                 var ops = event.target.value.match(isNumberRegex);
-                console.log(ops);
+                // console.log(ops);
                 if (ops == null || ops.length < 2 || ops.length > 2) {
                     errorsContainer.style.display = "block";
                     errorsContainer.innerHTML = "<h4>Необходимо 2 числа для битовой операции</h4>";
@@ -192,12 +205,7 @@
                         evalResult.innerHTML = null;
                         return;
                     }
-                    console.log(expr[0]);
-                    if (expr == null) {
-                        evalResult.innerHTML = null;
-                        return;
-                    }
-                    console.log(expr[0]);
+                    // console.log(expr[0]);
                     evalResult.textContent = eval(expr[0]);
                 } catch (error) {
                     evalResult.textContent = null;
